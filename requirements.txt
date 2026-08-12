@@ -1,0 +1,30 @@
+# requirements.txt - Coconut Farm DSS Project
+
+# Flask & Web Framework
+Flask==3.0.3
+flask-login==0.6.3
+Werkzeug==3.0.3
+Jinja2==3.1.4
+
+# Data Science & Machine Learning
+pandas==2.2.2
+numpy==1.26.4
+scikit-learn==1.5.1
+xgboost==2.1.1
+joblib==1.4.2
+
+# Deep Learning (for future CNN disease model)
+tensorflow==2.16.1
+
+# Time Series Forecasting (Prophet)
+prophet==1.1.5
+
+# Visualization (optional, but useful)
+matplotlib==3.9.2
+
+
+# Other utilities
+python-dotenv==1.0.1  # if you want to use .env file for secrets
+
+#pip install groq
+#pip install groq --upgrade
