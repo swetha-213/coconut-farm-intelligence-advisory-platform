@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Coconut Farm Intelligence and Advisory Platform  </title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background: linear-gradient(rgba(0, 100, 0, 0.45), rgba(0, 50, 0, 0.55)),
+                        url('https://images.pexels.com/photos/9500410/pexels-photo-9500410.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1') center/cover no-repeat fixed;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #333;
+        }
+        .login-container {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 24px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.35);
+            overflow: hidden;
+            max-width: 480px;
+            width: 90%;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        .header {
+            background: linear-gradient(135deg, #2c6e49 0%, #4a9d5d 100%);
+            color: white;
+            padding: 50px 30px 40px;
+            text-align: center;
+            position: relative;
+        }
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: url('https://images.unsplash.com/photo-1501696461415-6bd6660c6742?auto=format&fit=crop&q=80&w=800') center/cover;
+            opacity: 0.18;
+            z-index: 0;
+        }
+        .header > * {
+            position: relative;
+            z-index: 1;
+        }
+        .header h2 {
+            font-weight: 700;
+            font-size: 2.4rem;
+            margin-bottom: 0.5rem;
+            text-shadow: 1px 1px 6px rgba(0,0,0,0.4);
+        }
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+            margin: 0;
+        }
+        .form-container {
+            padding: 40px 35px 30px;
+        }
+        .form-label {
+            font-weight: 600;
+            color: #2c6e49;
+            margin-bottom: 0.6rem;
+        }
+        .form-control {
+            border-radius: 12px;
+            padding: 14px 16px;
+            border: 1px solid #a8d5ba;
+            transition: all 0.3s;
+        }
+        .form-control:focus {
+            border-color: #4a9d5d;
+            box-shadow: 0 0 0 0.25rem rgba(74, 157, 93, 0.25);
+        }
+        .input-group-text {
+            background: #e8f5e9;
+            border: 1px solid #a8d5ba;
+            border-right: none;
+            border-radius: 12px 0 0 12px;
+            color: #2c6e49;
+        }
+        .btn-login {
+            background: linear-gradient(135deg, #2c6e49, #4a9d5d);
+            border: none;
+            padding: 14px;
+            font-size: 1.15rem;
+            font-weight: 600;
+            border-radius: 50px;
+            transition: all 0.4s ease;
+            box-shadow: 0 8px 20px rgba(44, 110, 73, 0.3);
+        }
+        .btn-login:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 14px 30px rgba(44, 110, 73, 0.45);
+            background: linear-gradient(135deg, #4a9d5d, #2c6e49);
+        }
+        .register-link {
+            color: #2c6e49;
+            font-weight: 600;
+            text-decoration: none;
+        }
+        .register-link:hover {
+            color: #1e4d35;
+            text-decoration: underline;
+        }
+        .icon-coconut {
+            font-size: 3.2rem;
+            color: #90ee90;
+            margin-bottom: 1rem;
+            animation: pulse 3s infinite ease-in-out;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.12); }
+        }
+        @media (max-width: 576px) {
+            .header h2 { font-size: 2rem; }
+            .form-container { padding: 30px 25px; }
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="login-container">
+        <div class="header">
+            <i class="fas fa-coconut icon-coconut"></i>
+            <h2>Coconut Farm Intelligence and Advisory Platform</h2>
+            <p>Login to Access Your Smart Farm Dashboard</p>
+        </div>
+
+        <div class="form-container">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show mb-4" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <form method="POST">
+                <div class="mb-4">
+                    <label class="form-label">Username</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-user"></i></span>
+                        <input type="text" name="username" class="form-control" placeholder="Enter your username" required autofocus>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label">Password</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                        <input type="password" name="password" class="form-control" placeholder="Enter your password" required>
+                    </div>
+                </div>
+                <!-- Added Role Selection -->
+                <div class="mb-4">
+                    <label class="form-label">Login as</label>
+                    <select name="role" class="form-select" required>
+                        <option value="user">Buyer (User - Purchase coconuts)</option>
+                        <option value="farmer">Farmer (Seller - Predict & Sell coconuts)</option>
+                        <option value="admin">Admin (Manage platform)</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-login text-white w-100">
+                    <i class="fas fa-sign-in-alt me-2"></i> Login to Dashboard
+                </button>
+            </form>
+
+            <div class="text-center mt-4">
+                <p>Don't have an account? 
+                    <a href="/register" class="register-link">Register Now</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

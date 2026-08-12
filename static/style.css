@@ -1,0 +1,102 @@
+/* style.css - Colorful CSS for Impressive Design */
+
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(to bottom, #E0F7FA, #A5D6A7); /* Light blue to green for coconut theme */
+    color: #333;
+    margin: 0;
+    padding: 20px;
+}
+
+header {
+    text-align: center;
+    background: #228B22; /* Forest green */
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+h1, h2, h3 {
+    color: #1E90FF; /* Dodger blue for headings */
+}
+
+form {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    max-width: 400px;
+    margin: 20px auto;
+}
+
+input, select {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #1E90FF;
+    border-radius: 5px;
+}
+
+button {
+    background: linear-gradient(#32CD32, #228B22); /* Lime green gradient */
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+}
+
+button:hover {
+    background: linear-gradient(#228B22, #32CD32);
+}
+
+ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+li {
+    background: #F0F8FF;
+    margin: 10px 0;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.tabs {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+}
+
+.tab {
+    background: #FFFFFF;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    width: 30%;
+    margin: 10px;
+    text-align: center;
+}
+
+.chart {
+    max-width: 100%;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.action-plan {
+    background: #FFFACD; /* Lemon chiffon */
+    padding: 20px;
+    border-radius: 10px;
+    margin-top: 20px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+footer {
+    text-align: center;
+    margin-top: 20px;
+    color: #228B22;
+}

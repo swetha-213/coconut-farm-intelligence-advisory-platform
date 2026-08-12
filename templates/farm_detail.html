@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ farm.name }} - Control Center</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-dark: #1b5e20;
+            --primary-light: #4caf50;
+            --sidebar-width: 240px;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.1)),
+                        url('https://images.pexels.com/photos/9500410/pexels-photo-9500410.jpeg') center/cover fixed;
+            font-family: 'Segoe UI', sans-serif;
+            color: #333;
+            min-height: 100vh;
+        }
+
+        /* --- SIDEBAR STYLE --- */
+        .sidebar {
+            position: fixed; top: 0; left: 0;
+            width: var(--sidebar-width); height: 100vh;
+            background: linear-gradient(180deg, #0d3d18 0%, #052710 100%);
+            color: white; padding-top: 20px;
+            z-index: 1000;
+            box-shadow: 5px 0 25px rgba(0,0,0,0.5);
+            display: flex; flex-direction: column;
+        }
+        .sidebar-header { text-align: center; padding: 25px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
+        .sidebar-header h4 { margin: 0; font-weight: 700; letter-spacing: 1px; }
+        .sidebar-header small { opacity: 0.6; font-size: 0.75rem; margin-top: 5px; display: block; }
+
+        .sidebar-menu { padding: 0 15px; list-style: none; flex-grow: 1; }
+        .menu-item {
+            display: flex; align-items: center;
+            padding: 14px 20px;
+            color: rgba(255,255,255,0.85); text-decoration: none;
+            transition: 0.3s; border-radius: 12px;
+            margin-bottom: 8px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid transparent; font-weight: 500;
+        }
+        .menu-item i { width: 24px; margin-right: 15px; font-size: 1.1rem; text-align: center; }
+        .menu-item:hover { background: rgba(255, 255, 255, 0.2); color: #fff; transform: translateX(5px); }
+        .menu-item.active { background: linear-gradient(90deg, #2e7d32, #1b5e20); color: white; font-weight: 700; }
+
+        .sidebar-footer { padding: 20px; text-align: center; border-top: 1px solid rgba(255,255,255,0.1); }
+        .sidebar-footer small { color: rgba(255,255,255,0.4); font-size: 0.7rem; }
+
+        /* --- MAIN CONTENT --- */
+        .main-content { margin-left: var(--sidebar-width); padding: 30px; }
+
+        /* --- CARDS --- */
+        .info-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3); border: none;
+            overflow: hidden; transition: transform 0.3s;
+        }
+        .info-card:hover { transform: translateY(-2px); }
+
+        .info-header {
+            background: rgba(0,0,0,0.03); padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .info-header h5 { margin: 0; font-weight: 600; color: var(--primary-dark); }
+
+        /* Large Action Cards */
+        .action-card {
+            padding: 25px; border-radius: 15px; text-align: center;
+            background: rgba(255, 255, 255, 0.9); color: #333; text-decoration: none;
+            transition: 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            border-bottom: 4px solid transparent; height: 100%; display: block;
+        }
+        .action-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.3); color: #333; }
+        .action-card.danger:hover { border-bottom-color: #dc3545; background: white; }
+        .action-card.primary:hover { border-bottom-color: #007bff; background: white; }
+        .action-card.success:hover { border-bottom-color: #28a745; background: white; }
+        .action-card.warning:hover { border-bottom-color: #ffc107; background: white; }
+
+        .action-icon {
+            width: 70px; height: 70px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 15px; font-size: 28px; color: white;
+        }
+
+        .task-item {
+            padding: 12px; border-bottom: 1px solid #eee;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .task-item:last-child { border-bottom: none; }
+
+        /* Result Box Style for Modal */
+        .result-box {
+            background: #e8f5e9; border-radius: 10px; padding: 20px; margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <h4>COCONUT</h4>
+            <small>Farm Intelligence</small>
+        </div>
+
+        <ul class="sidebar-menu">
+            <li><a href="/farmer_dashboard" class="menu-item"><i class="fas fa-th-large"></i> Dashboard</a></li>
+            <li><a href="/predict_disease" class="menu-item"><i class="fas fa-bug"></i> Disease Scan</a></li>
+            <li><a href="/predict_yield_price" class="menu-item"><i class="fas fa-chart-line"></i> Yield Prediction</a></li>
+            <li><a href="/harvest_planning" class="menu-item active"><i class="fas fa-calendar-alt"></i> Harvest Plan</a></li>
+            <li><a href="/farm_tasks" class="menu-item"><i class="fas fa-tasks"></i> Tasks</a></li>
+            <li><a href="/sell_coconuts" class="menu-item"><i class="fas fa-store"></i> Marketplace</a></li>
+        </ul>
+        
+        <div class="sidebar-footer"><small>© 2024 All Rights Reserved</small></div>
+    </nav>
+
+    <!-- MAIN CONTENT AREA -->
+    <div class="main-content">
+        
+        <!-- TOP HEADER -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="text-white fw-bold" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">Farm Overview</h2>
+                <p class="text-white-50">Manage operations for <strong>{{ farm.name }}</strong></p>
+            </div>
+            <div>
+                <a href="/farmer_dashboard" class="btn btn-light">
+                    <i class="fas fa-arrow-left me-2"></i> Back to My Farms
+                </a>
+            </div>
+        </div>
+
+        <!-- Large Action Cards Grid -->
+        <div class="row g-4 mb-4">
+            <div class="col-lg-3 col-md-6">
+                <a href="/predict_disease" class="action-card danger">
+                    <div class="action-icon bg-danger"><i class="fas fa-bug"></i></div>
+                    <h5>Scan Disease</h5>
+                    <small class="text-muted">AI Leaf Analysis</small>
+                </a>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <a href="/predict_yield_price" class="action-card primary">
+                    <div class="action-icon bg-primary"><i class="fas fa-chart-line"></i></div>
+                    <h5>Predict Yield</h5>
+                    <small class="text-muted">Production Estimate</small>
+                </a>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <a href="/harvest_planning" class="action-card success">
+                    <div class="action-icon bg-success"><i class="fas fa-seedling"></i></div>
+                    <h5>Plan Harvest</h5>
+                    <small class="text-muted">Schedule & Labor</small>
+                </a>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <a href="/farm_tasks" class="action-card warning">
+                    <div class="action-icon bg-info"><i class="fas fa-tasks"></i></div>
+                    <h5>Manage Tasks</h5>
+                    <small class="text-muted">Reminders</small>
+                </a>
+            </div>
+        </div>
+
+        <!-- Info Tables Row (FIXED - Removed Duplicate) -->
+        <div class="row g-4">
+            <!-- Pending Tasks -->
+            <div class="col-lg-6">
+                <div class="info-card">
+                    <div class="info-header">
+                        <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Pending Tasks</h5>
+                        <span class="badge bg-secondary">{{ tasks|length }}</span>
+                    </div>
+                    <div class="card-body p-0">
+                        {% if tasks %}
+                            {% for task in tasks %}
+                                <div class="task-item">
+                                    <div>
+                                        <strong>{{ task.task_title }}</strong><br>
+                                        <small class="text-muted">{{ task.due_date }}</small>
+                                    </div>
+                                    <span class="badge bg-warning text-dark">Pending</span>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-center py-5 text-muted">
+                                <i class="fas fa-check-circle fa-2x mb-2"></i>
+                                <p>All caught up!</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Last Harvest Plan -->
+            <div class="col-lg-6">
+                <div class="info-card">
+                    <div class="info-header">
+                        <h5 class="mb-0"><i class="fas fa-history me-2"></i>Last Harvest Plan</h5>
+                        <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#harvestPlanModal">
+                            <i class="fas fa-plus me-1"></i> Create/Update
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        {% if plan %}
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <strong>Last Date:</strong> <span>{{ plan.last_harvest }}</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <strong>Next Date:</strong> <span class="text-success fw-bold">{{ plan.next_harvest }}</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <strong>Est. Production:</strong> <span>{{ plan.estimated_production }} nuts</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <strong>Labor Needed:</strong> <span>{{ plan.labor_needed }} people</span>
+                                </li>
+                            </ul>
+                        {% else %}
+                            <div class="text-center py-5">
+                                <img src="https://cdn-icons-png.flaticon.com/512/2906/2906274.png" style="width: 60px; opacity: 0.5;" alt="Plan">
+                                <p class="text-muted mt-2">No plan created yet.</p>
+                                <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#harvestPlanModal">Create Plan Now</button>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- MODAL: Harvest Planning -->
+    <div class="modal fade" id="harvestPlanModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Harvest Planning</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="harvestForm" action="/save_harvest_plan" method="POST">
+                        <input type="hidden" name="farm_id" value="{{ farm.id }}">
+                        
+                        <div class="row g-3">
+                            <!-- 1. Variety -->
+                            <div class="col-md-6">
+                                <label>Coconut Variety</label>
+                                <select name="variety" id="variety" class="form-select" onchange="updateDefaults()" required>
+                                    <option value="WCT">West Coast Tall</option>
+                                    <option value="Hybrid">Hybrid</option>
+                                    <option value="Tall">Local Tall</option>
+                                    <option value="Dwarf">Dwarf</option>
+                                </select>
+                            </div>
+                            <!-- 2. Last Harvest Date -->
+                            <div class="col-md-6">
+                                <label>Last Harvest Date</label>
+                                <input type="date" name="last_harvest" id="lastHarvest" class="form-control" required>
+                            </div>
+                            <!-- 3. Number of Trees (Backend needs this) -->
+                            <div class="col-md-6">
+                                <label>Number of Trees</label>
+                                <input type="number" name="trees" id="trees" class="form-control" required value="100">
+                            </div>
+                            <!-- 4. Tree Age (Backend needs this) -->
+                            <div class="col-md-6">
+                                <label>Tree Age (years)</label>
+                                <input type="number" name="tree_age" id="treeAge" class="form-control" required value="5">
+                            </div>
+                            
+                            <!-- HIDDEN FIELDS: These send calculation results to backend -->
+                            <input type="hidden" name="next_harvest" id="nextHarvestInput">
+                            <input type="hidden" name="estimated_production" id="productionInput">
+                            <input type="hidden" name="labor_needed" id="laborInput">
+                            <input type="hidden" name="notes" id="notesInput">
+                        </div>
+
+                        <!-- Result Box -->
+                        <div id="predictionResult" class="result-box d-none mt-3">
+                            <h5 class="text-success mb-2">Prediction Result</h5>
+                            <p><strong>Next Harvest:</strong> <span id="resNextDate"></span></p>
+                            <p><strong>Est. Production:</strong> <span id="resProduction"></span> nuts</p>
+                            <p><strong>Labor Needed:</strong> <span id="resLabor"></span> workers</p>
+                        </div>
+
+                        <div class="mt-4 d-flex justify-content-between">
+                            <button type="button" class="btn btn-outline-primary" onclick="predictHarvest()">
+                                <i class="fas fa-calculator me-1"></i> Calculate
+                            </button>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save me-1"></i> Save Plan
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Logic matching your backend requirements
+        const varietyData = {
+            "WCT":    { interval: 65, nuts: 18, laborFactor: 500 },
+            "Hybrid": { interval: 55, nuts: 22, laborFactor: 550 },
+            "Tall":   { interval: 75, nuts: 14, laborFactor: 450 },
+            "Dwarf":  { interval: 50, nuts: 25, laborFactor: 600 }
+        };
+
+        function updateDefaults() {
+            const variety = document.getElementById('variety').value;
+            // Optional: You can auto-fill nuts per tree if you add a field for it
+        }
+
+        function predictHarvest() {
+            const lastHarvestStr = document.getElementById('lastHarvest').value;
+            const trees = parseInt(document.getElementById('trees').value);
+            const variety = document.getElementById('variety').value;
+            
+            // Defaults for calculation
+            const nutsPerTree = varietyData[variety].nuts; 
+
+            if (!lastHarvestStr || !trees) {
+                alert("Please fill Last Harvest Date and Trees");
+                return;
+            }
+
+            const data = varietyData[variety];
+            
+            // Calculation Logic
+            let lastDate = new Date(lastHarvestStr);
+            let nextDate = new Date(lastDate);
+            nextDate.setDate(lastDate.getDate() + data.interval);
+            
+            const production = trees * nutsPerTree;
+            const labor = Math.ceil(production / data.laborFactor);
+
+            // Format Date
+            const options = { month: 'short', day: 'numeric', year: 'numeric' };
+            const formattedDate = nextDate.toLocaleDateString('en-US', options);
+
+            // Update UI Result Box
+            document.getElementById('resNextDate').textContent = formattedDate;
+            document.getElementById('resProduction').textContent = production;
+            document.getElementById('resLabor').textContent = labor;
+            
+            // CRITICAL: FILL HIDDEN INPUTS so Backend receives them
+            document.getElementById('nextHarvestInput').value = formattedDate;
+            document.getElementById('productionInput').value = production;
+            document.getElementById('laborInput').value = labor;
+            document.getElementById('notesInput').value = `Predicted for ${variety} variety.`;
+
+            document.getElementById('predictionResult').classList.remove('d-none');
+        }
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

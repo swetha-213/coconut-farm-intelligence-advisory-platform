@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Disease Detection - Coconut Farm</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(rgba(30, 92, 56, 0.85), rgba(30, 92, 56, 0.7)),
+                        url('https://images.pexels.com/photos/9500410/pexels-photo-9500410.jpeg') center/cover fixed;
+            font-family: 'Segoe UI', sans-serif;
+            min-height: 100vh;
+        }
+        .main-card {
+            background: rgba(255,255,255,0.96);
+            border-radius: 25px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+            padding: 40px;
+            max-width: 950px;
+            margin: 40px auto;
+        }
+        .uploaded-img {
+            max-height: 320px;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            border: 5px solid white;
+        }
+        
+        /* Severity Badge Styles */
+        .severity-badge {
+            font-size: 1.2rem;
+            font-weight: 700;
+            padding: 12px 30px;
+            border-radius: 50px;
+            display: inline-block;
+        }
+        .mild     { background:#d4edda; color:#155724; }
+        .moderate { background:#fff3cd; color:#856404; }
+        .severe   { background:#f8d7da; color:#721c24; }
+
+        /* Progress Bar Style */
+        .progress {
+            height: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    {% include 'partials/header.html' %}
+
+    <div class="container">
+        <div class="main-card">
+            <h2 class="text-center mb-4 text-success">
+                <i class="fas fa-bug me-2"></i> AI Disease Detection & Advisory
+            </h2>
+
+            <form method="POST" enctype="multipart/form-data" class="mb-5">
+                <div class="row g-3">
+                    <div class="col-md-12">
+                        <label class="form-label fw-bold">Describe Symptoms (Optional)</label>
+                        <textarea name="symptoms" class="form-control" rows="2" placeholder="Yellow spots, bleeding from trunk..."></textarea>
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label fw-bold">Upload Affected Leaf / Bud Image</label>
+                        <input type="file" name="image" class="form-control" accept="image/*">
+                    </div>
+                    <div class="col-12 text-center">
+                        <button type="submit" class="btn btn-warning btn-lg px-5 mt-3">
+                            <i class="fas fa-search me-2"></i> Scan Disease
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            {% if uploaded_image %}
+            <div class="text-center mb-4">
+                <h5>Scanned Image</h5>
+                <img src="{{ uploaded_image }}" alt="Uploaded" class="uploaded-img img-fluid">
+            </div>
+            {% endif %}
+
+            {% if disease %}
+            <!-- Hidden input to pass data to JS without Syntax Errors in Editor -->
+            <input type="hidden" id="confidenceValue" value="{{ confidence | default(0) }}">
+
+            <div class="result-box p-4 rounded-4 bg-light">
+                <h4 class="text-danger text-center">
+                    <i class="fas fa-virus"></i> Detected Disease: <strong>{{ disease }}</strong>
+                </h4>
+                
+                <!-- Confidence / Affected Percentage -->
+                <div class="text-center my-4">
+                    <h1 class="display-4 fw-bold text-danger" id="confText">0%</h1>
+                    <p class="text-muted">Affected Area Probability</p>
+                    
+                    <!-- Visual Progress Bar -->
+                    <div class="progress mx-auto" style="max-width: 300px;">
+                        <div class="progress-bar bg-danger" role="progressbar" id="confBar" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- Severity Badge -->
+                <div class="text-center my-4">
+                    <span id="severityBadge" class="severity-badge mild">ANALYZING...</span>
+                    <br>
+                    <small class="text-muted">Detection Method: {{ detection_method }}</small>
+                </div>
+
+                <!-- Treatment -->
+                <div class="alert alert-success">
+                    <h5><i class="fas fa-medkit me-2"></i> Recommended Treatment</h5>
+                    <p style="white-space: pre-line;">{{ disease_solution }}</p>
+                </div>
+
+                <!-- Prevention -->
+                <div class="alert alert-info">
+                    <h5><i class="fas fa-shield-alt me-2"></i> Prevention Tips</h5>
+                    <ul id="preventionList" class="mb-0"></ul>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="text-center mt-4">
+                <a href="/farmer_dashboard" class="btn btn-secondary btn-lg">← Back to Dashboard</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 1. Read value from hidden input (No VS Code Errors!)
+        var confValue = parseFloat(document.getElementById('confidenceValue').value);
+
+        // 2. Update UI Elements
+        document.getElementById('confText').innerText = confValue.toFixed(1) + "%";
+        document.getElementById('confBar').style.width = confValue + "%";
+
+        // 3. Set Severity Badge & Prevention Tips
+        var badge = document.getElementById('severityBadge');
+        var prevList = document.getElementById('preventionList');
+        var tips = [];
+
+        if (confValue <= 25) {
+            badge.className = "severity-badge mild";
+            badge.textContent = "MILD STAGE";
+            tips = ["Regular monitoring is sufficient.", "Ensure proper drainage.", "Use organic manure."];
+        } else if (confValue <= 60) {
+            badge.className = "severity-badge moderate";
+            badge.textContent = "MODERATE STAGE";
+            tips = ["Remove affected leaves immediately.", "Apply organic fungicides.", "Avoid water stagnation."];
+        } else {
+            badge.className = "severity-badge severe";
+            badge.textContent = "SEVERE STAGE - Urgent!";
+            tips = ["Isolate the affected tree if possible.", "Immediate chemical treatment required.", "Contact nearest agricultural officer.", "Disinfect tools after use."];
+        }
+
+        // Populate list
+        if (prevList) {
+            tips.forEach(function(tip) {
+                var li = document.createElement('li');
+                li.textContent = tip;
+                prevList.appendChild(li);
+            });
+        }
+    </script>
+</body>
+</html>

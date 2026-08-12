@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Harvest Planning - Coconut Farm</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        body { background: linear-gradient(rgba(0,80,0,0.4), rgba(0,50,0,0.55)), url('https://images.pexels.com/photos/9500410/pexels-photo-9500410.jpeg') center/cover no-repeat fixed; min-height: 100vh; }
+        .card { background: rgba(255,255,255,0.95); border-radius: 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.2); padding: 30px; }
+        .result { background: #e8f5e9; border-radius: 15px; padding: 20px; margin-top: 25px; }
+    </style>
+</head>
+<body>
+    {% include 'partials/header.html' %}
+    <div class="container py-5">
+        <div class="card">
+            <h3 class="text-success text-center mb-4"><i class="fas fa-calendar-check me-2"></i> Harvest Planning</h3>
+
+            <form id="harvestForm">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Farm</label>
+                        <select name="farm_id" class="form-select" required>
+                            {% for farm in farms %}
+                                <option value="{{ farm[0] }}">{{ farm[2] }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Coconut Variety</label>
+                        <select id="variety" class="form-select" onchange="updateDefaults()" required>
+                            <option value="WCT">West Coast Tall (WCT)</option>
+                            <option value="Hybrid">Hybrid (Dwarf x Tall)</option>
+                            <option value="Tall">Local Tall</option>
+                            <option value="Dwarf">Dwarf</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Last Harvest Date</label>
+                        <input type="date" id="lastHarvest" class="form-control" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Number of Trees</label>
+                        <input type="number" id="trees" class="form-control" min="1" value="100" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Tree Age (years)</label>
+                        <input type="number" id="treeAge" class="form-control" min="1" value="8" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Average Nuts per Tree</label>
+                        <input type="number" id="nutsPerTree" class="form-control" min="1" value="15" required>
+                    </div>
+                </div>
+
+                <div class="text-center mt-4">
+                    <button type="button" onclick="predictHarvest()" class="btn btn-success px-5 py-3">
+                        <i class="fas fa-calculator me-2"></i> Predict Harvest
+                    </button>
+                </div>
+            </form>
+
+            <div id="predictionResult" class="result d-none">
+                <h4 class="text-success">Predicted Harvest Plan</h4>
+                <p><strong>Next Harvest Date (approx):</strong> <span id="nextDate"></span></p>
+                <p><strong>Expected Production:</strong> <span id="production"></span> nuts</p>
+                <p><strong>Labour Required:</strong> <span id="labor"></span> workers</p>
+                <p><strong>Notes:</strong> <span id="notes"></span></p>
+            </div>
+
+            <div class="text-center mt-4">
+                <a href="/farmer_dashboard" class="btn btn-secondary">Back to Dashboard</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variety-wise realistic data
+        const varietyData = {
+            "WCT":    { interval: 65, nuts: 18, laborFactor: 500 },
+            "Hybrid": { interval: 55, nuts: 22, laborFactor: 550 },
+            "Tall":   { interval: 75, nuts: 14, laborFactor: 450 },
+            "Dwarf":  { interval: 50, nuts: 25, laborFactor: 600 }
+        };
+
+        function updateDefaults() {
+            const variety = document.getElementById('variety').value;
+            const data = varietyData[variety];
+            document.getElementById('nutsPerTree').value = data.nuts;
+        }
+
+        function predictHarvest() {
+            const lastHarvestStr = document.getElementById('lastHarvest').value;
+            const trees = parseInt(document.getElementById('trees').value) || 0;
+            const variety = document.getElementById('variety').value;
+            const nutsPerTree = parseInt(document.getElementById('nutsPerTree').value) || 15;
+
+            if (!lastHarvestStr || trees < 1) {
+                alert("Please fill Last Harvest Date and Number of Trees");
+                return;
+            }
+
+            const data = varietyData[variety];
+
+            // Calculate next harvest date
+            let lastDate = new Date(lastHarvestStr);
+            let nextDate = new Date(lastDate);
+            nextDate.setDate(lastDate.getDate() + data.interval);
+
+            const nextFormatted = nextDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
+            // Calculate production
+            const production = Math.round(trees * nutsPerTree);
+
+            // Calculate labor
+            const labor = Math.ceil(production / data.laborFactor);
+
+            // Show result
+            document.getElementById('nextDate').textContent = nextFormatted;
+            document.getElementById('production').textContent = production;
+            document.getElementById('labor').textContent = labor;
+            document.getElementById('notes').textContent = `Based on ${variety} variety. Interval: ${data.interval} days. Adjust based on weather and irrigation.`;
+            document.getElementById('predictionResult').classList.remove('d-none');
+        }
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yield & Price Prediction - Coconut Farm DSS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        body { background: linear-gradient(rgba(0,80,0,0.4), rgba(0,50,0,0.55)), url('https://images.pexels.com/photos/9500410/pexels-photo-9500410.jpeg') center/cover; }
+        .main-card { background: rgba(255,255,255,0.95); border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); padding: 40px; margin: 40px auto; }
+        .form-label { color: #2c6e49; font-weight: 600; }
+        .price-table thead { background: #2c6e49; color: white; }
+        .forecast-note { font-size: 0.95rem; color: #555; }
+    </style>
+</head>
+<body>
+    {% include 'partials/header.html' %}
+
+    <div class="container">
+        <div class="main-card">
+            <h2 class="text-center mb-4"><i class="fas fa-chart-line me-2"></i> Yield & Price Prediction</h2>
+
+            <form method="POST">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Tree Variety <span class="text-danger">*</span></label>
+                        <select name="variety" id="varietySelect" class="form-select" onchange="loadRealPriceForecast()">
+                            <option value="West Coast Tall">West Coast Tall (WCT)</option>
+                            <option value="Chowghat Orange Dwarf">Chowghat Orange Dwarf (COD)</option>
+                            <option value="VHC-3" selected>VHC-3 Hybrid (High Yield)</option>
+                            <option value="Tiptur Tall">Tiptur Tall</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Location (District) <span class="text-danger">*</span></label>
+                        <select name="location" id="districtSelect" class="form-select" onchange="loadRealPriceForecast()">
+                            <option value="Coimbatore">Coimbatore</option>
+                            <option value="Tiruppur">Tiruppur</option>
+                            <option value="Thanjavur">Thanjavur</option>
+                            <option value="Salem">Salem</option>
+                            <option value="Madurai">Madurai</option>
+                            <option value="Erode">Erode</option>
+                        </select>
+                    </div>
+                    <!-- மற்ற fields same-ஆ இருக்கட்டும் -->
+                    <div class="col-md-6">
+                        <label class="form-label">Tree Age (years)</label>
+                        <input type="number" name="tree_age" class="form-control" value="8" min="1">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Farm Area (hectares)</label>
+                        <input type="number" name="area" class="form-control" value="5" min="0.5" step="0.5">
+                    </div>
+                    <div class="col-12 text-center">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="fas fa-search me-2"></i> Predict Yield & Price
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            {% if prediction %}
+                <div class="result-box yield-success mt-5">
+                    <h4><i class="fas fa-seedling me-2"></i> Predicted Yield</h4>
+                    <h3 class="text-success">{{ prediction }} kg (for {{ area }} hectares)</h3>
+                </div>
+            {% endif %}
+
+            <!-- Real Price Forecast with Market & Variety -->
+            <div class="mt-5">
+                <h4><i class="fas fa-rupee-sign me-2"></i> Real-Time Price Forecast 
+                    <small class="text-muted" id="forecastSubtitle">(Loading...)</small>
+                </h4>
+                <div class="table-responsive mt-3">
+                    <table class="table table-striped price-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Market</th>
+                                <th>Price (₹/kg)</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="forecastTable">
+                            <tr><td colspan="4" class="text-center">Loading real market data...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="text-center mt-5">
+                <a href="/farmer_dashboard" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-2"></i> Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const varietyMultipliers = {
+            "VHC-3": 1.08,
+            "Chowghat Orange Dwarf": 1.05,
+            "West Coast Tall": 1.00,
+            "Tiptur Tall": 1.02
+        };
+
+        async function loadRealPriceForecast() {
+            const apiKey = "579b464db66ec23bdd00000119feeba56518443d6eec0e3a22d21dcd";
+            const selectedDistrict = document.getElementById('districtSelect').value;
+            const selectedVariety = document.getElementById('varietySelect').value;
+            const multiplier = varietyMultipliers[selectedVariety] || 1.00;
+
+            document.getElementById('forecastSubtitle').innerHTML = 
+                `(${selectedDistrict} • ${selectedVariety} adjusted)`;
+
+            try {
+                const url = `https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070?api-key=${apiKey}&format=json&limit=20&state=Tamil%20Nadu&commodity=Coconut&order_by=arrival_date&sort=desc`;
+                const res = await fetch(url);
+                const data = await res.json();
+
+                if (data.records && data.records.length > 0) {
+                    let html = '';
+                    let filteredRecords = data.records.filter(record => {
+                        const market = (record.market || '').toLowerCase();
+                        return market.includes(selectedDistrict.toLowerCase()) || !selectedDistrict;
+                    });
+
+                    // Past real prices
+                    filteredRecords.slice(0, 10).forEach(record => {
+                        const basePrice = (parseFloat(record.modal_price || 0) / 100);
+                        const varietyPrice = (basePrice * multiplier).toFixed(1);
+                        const marketName = record.market || `APMC / Uzhavar Sandhai - ${selectedDistrict}`;
+                        html += `<tr>
+                            <td>${record.arrival_date || 'Recent'}</td>
+                            <td>${marketName}</td>
+                            <td>₹${varietyPrice}</td>
+                            <td class="text-success">Actual</td>
+                        </tr>`;
+                    });
+
+                    // Forecast next 30 days
+                    const avgBase = filteredRecords.length > 0 
+                        ? filteredRecords.reduce((sum, r) => sum + (parseFloat(r.modal_price || 0) / 100), 0) / filteredRecords.length 
+                        : 50;
+
+                    const today = new Date();
+                    for (let i = 1; i <= 30; i++) {
+                        const futureDate = new Date(today);
+                        futureDate.setDate(today.getDate() + i);
+                        const forecastPrice = (avgBase * multiplier + (i * 0.1 - Math.random()*0.4)).toFixed(1);
+                        html += `<tr class="table-success">
+                            <td>${futureDate.toLocaleDateString('en-IN')}</td>
+                            <td>${selectedVariety} Markets (${selectedDistrict})</td>
+                            <td><strong>₹${forecastPrice}</strong></td>
+                            <td>Forecast</td>
+                        </tr>`;
+                    }
+
+                    document.getElementById('forecastTable').innerHTML = html || 
+                        '<tr><td colspan="4" class="text-center text-warning">No specific market data found for this district.</td></tr>';
+                }
+            } catch (err) {
+                document.getElementById('forecastTable').innerHTML = `
+                    <tr><td colspan="4" class="text-center text-danger">
+                        Unable to load real data. Try again later.
+                    </td></tr>`;
+            }
+        }
+
+        // Variety or District change ஆகும்போது refresh
+        document.getElementById('varietySelect').addEventListener('change', loadRealPriceForecast);
+        document.getElementById('districtSelect').addEventListener('change', loadRealPriceForecast);
+
+        // Page load
+        window.addEventListener('load', loadRealPriceForecast);
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
